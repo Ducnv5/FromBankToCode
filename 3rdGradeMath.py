@@ -16,7 +16,7 @@ def solve():
 
     first_half = []
     full_result = []
-    for sum1 in range(5, 14*9-1):
+    for sum1 in range(5, 87):
         len1 = len([[a, e, d, f]
                     for a in range(1, 10)
                     for d in range(1, 10)
