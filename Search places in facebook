@@ -1,0 +1,55 @@
+    
+import requests
+import json
+import os
+import logging
+
+__doc__ = '''
+get information of all places (id, name, website, location)
+from facebook with criterias
+input: location, searching radius, keywords
+output: Store result into json file
+'''
+
+
+def place_search():
+    try:
+        app_id = os.environ['app_id']
+        app_secret = os.environ['app_secret']
+    except KeyError as e:
+        logging.error('You must have client\'s id and secret in environment first')
+    BASE_URL = 'https://graph.facebook.com/v2.9/'
+    TOKEN_PATH = 'oauth/access_token?client_id={0}&client_secret={1}&&'\
+                 'grant_type=client_credentials'.format(app_id, app_secret)
+    token = requests.get(BASE_URL +
+                         TOKEN_PATH).json()['access_token']
+    result = []
+    SEARCH_PAGE_PATH = 'search?type=place&{0}&center={1},{2}'\
+                       '&distance=1000&fields=id,name,website,'\
+                       'location&access_token={3}'
+    # API_VERSION = 'v2.9/'
+    query_agrument = 'cafe,coffe,caphe,tra da,tea'
+    latitude = 21.027875
+    longitude = 105.853654
+    path = BASE_URL + SEARCH_PAGE_PATH.format(query_agrument,
+                                              latitude, longitude, token)
+    pages_id = requests.get(path).json()
+    result.extend(pages_id['data'])
+    while True:
+        if 'paging' in pages_id:
+            api_link = pages_id['paging']['next']
+            pages_id = requests.get(api_link).json()
+            result.extend(pages_id['data'])
+        else:
+            break
+    with open('facebook_place_search.js', 'w') as f:
+        json.dump(result, f)
+    print('result: {0}'.format(os.path.abspath('facebook_place_search.js')))
+
+
+def main():
+    place_search()
+
+
+if __name__ == "__main__":
+    main()
